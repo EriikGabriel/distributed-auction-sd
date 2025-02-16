@@ -26,7 +26,6 @@ auction-system/
 │
 ├── frontend/
 │ ├── public/
-│ │ └── index.html # Arquivo HTML principal para o React (template)
 │ ├── src/
 │ │ ├── components/
 │ │ │ ├── ActiveAuctions.jsx # Exibe a lista de leilões ativos
