@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  flask:
+    build:
+      context: ./backend
+    image: auction-flask:latest
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  frontend:
+    build:
+      context: ./frontend
+    image: auction-frontend:latest
+    ports:
+      - "3000:80" # O Nginx escuta na porta 80
