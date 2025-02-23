@@ -66,3 +66,22 @@ npm run dev # Para rodar o servidor de desenvolvimento local do projeto
 ```
 
 Pronto! Agora o front-end deve estar acessível através da URL: [http://localhost:5173/](http://localhost:5173/)
+
+## Setup - projeto
+
+Para configurar o projeto, primeiro clone o repositório:
+```bash
+https://github.com/EriikGabriel/distributed-auction-sd.git 
+```
+Em seguida, no diretório raiz do projeto clonado, execute o comando:
+```bash
+./setup_multipass.sh
+```
+Pronto, agora seu projeto já está funcionando e esta apto para testes
+
+
+
+
+
+
+
