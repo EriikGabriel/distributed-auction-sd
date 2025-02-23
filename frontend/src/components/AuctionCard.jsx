@@ -27,12 +27,12 @@ export function AuctionCard({ auction, onViewDetails }) {
         {isClosed ? (
           <div className="flex items-center gap-1">
             <BadgeDollarSign className="size-5" />
-            <small>Lance final</small>
+            <small>Valor final</small>
           </div>
         ) : (
           <div className="flex items-center gap-1">
             <BadgeDollarSign className="size-5" />
-            <small>Lance atual</small>
+            <small>Valor atual</small>
           </div>
         )}
         <span className="text-neutral-900 font-semibold">

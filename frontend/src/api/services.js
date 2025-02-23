@@ -2,7 +2,6 @@ import axios from "axios"
 
 const { protocol, hostname } = window.location
 const API_URL = `${protocol}//${hostname}:5000`
-// const API_URL = `http://10.183.22.70:5000`
 
 export const createAuction = async (auctionData) => {
   return await axios.post(`${API_URL}/create-auction`, auctionData)

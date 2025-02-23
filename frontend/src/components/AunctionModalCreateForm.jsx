@@ -10,11 +10,14 @@ export function AuctionModalCreateForm({ onSubmit, onClose }) {
     e.preventDefault()
 
     const data = {
+      id: crypto.randomUUID(),
       title: e.target.title.value,
       description: e.target.description.value,
       starting_price: e.target.starting_price.value,
+      current_bid: e.target.starting_price.value,
       end_time: e.target.end_time.value,
-      active: true,
+      bids: [],
+      active: "True",
     }
 
     onSubmit(data)

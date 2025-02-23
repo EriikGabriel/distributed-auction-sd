@@ -18,6 +18,8 @@ export function AuctionModal({ isOpen, onClose, onSubmit, type, auction }) {
 
   if (!isOpen) return null
 
+  let bids = JSON.parse(auction?.bids ?? "[]")
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
       {/* Modal principal */}
@@ -56,7 +58,7 @@ export function AuctionModal({ isOpen, onClose, onSubmit, type, auction }) {
             </button>
           </div>
           <ul className="space-y-3 max-h-[80vh] overflow-y-auto">
-            {auction?.bids?.map((bid, index) => (
+            {bids?.map((bid, index) => (
               <li key={index} className="border p-2 rounded bg-gray-100">
                 <p className="text-sm font-medium">{bid.user}</p>
                 <p className="text-xs text-gray-500">

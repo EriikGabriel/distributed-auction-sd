@@ -1,13 +1,12 @@
 import PropTypes from "prop-types"
 
 export const AunctionType = PropTypes.shape({
-  id: PropTypes.number,
+  id: PropTypes.string,
   title: PropTypes.string,
   description: PropTypes.string,
-  current_price: PropTypes.number,
-  final_price: PropTypes.number,
-  end_time: PropTypes.string,
-  active: PropTypes.bool,
-  bids_count: PropTypes.number,
+  starting_price: PropTypes.number,
   current_bid: PropTypes.number,
+  end_time: PropTypes.string,
+  bids: PropTypes.arrayOf(PropTypes.number),
+  active: PropTypes.bool,
 }).isRequired

@@ -11,6 +11,7 @@ import { AunctionType } from "../types/aunction"
 import { cn } from "../utils/cn"
 
 import PropTypes from "prop-types"
+import { placeBid } from "../api/services"
 
 AuctionModalDetails.propTypes = {
   auction: AunctionType,
@@ -18,8 +19,10 @@ AuctionModalDetails.propTypes = {
 }
 
 export function AuctionModalDetails({ auction, onShowHistory }) {
-  const isClosed = !auction?.active
   const [timeLeft, setTimeLeft] = useState("")
+  const [bidValue, setBidValue] = useState("")
+
+  const isClosed = !auction?.active
 
   useEffect(() => {
     if (!isClosed) {
@@ -38,9 +41,19 @@ export function AuctionModalDetails({ auction, onShowHistory }) {
         }
       }, 1000) // Executa a cada segundo
 
-      return () => clearInterval(interval) // Limpa o intervalo ao desmontar o componente
+      return () => clearInterval(interval)
     }
-  }, [auction, isClosed]) // Dependências
+  }, [auction, isClosed])
+
+  const handlePlaceBid = async () => {
+    const response = await placeBid({
+      id: auction.id,
+      bid: bidValue,
+    })
+    console.log(response.data)
+  }
+
+  let bids = JSON.parse(auction?.bids ?? "[]")
 
   return (
     <div className="rounded-lg p-3 flex flex-col gap-2">
@@ -107,9 +120,14 @@ export function AuctionModalDetails({ auction, onShowHistory }) {
               type="text"
               placeholder={`${Number(auction?.current_bid) + 50}`}
               className="p-1 h-full outline-none  w-full"
+              onChange={(e) => setBidValue(e.target.value)}
+              value={bidValue}
             />
           </div>
-          <button className="flex items-center justify-center gap-2 bg-neutral-900 hover:bg-neutral-900/90 text-white transition-all px-3 h-full font-bold rounded-r-lg text-xs">
+          <button
+            className="flex items-center justify-center gap-2 bg-neutral-900 hover:bg-neutral-900/90 text-white transition-all px-3 h-full font-bold rounded-r-lg text-xs"
+            onClick={handlePlaceBid}
+          >
             <HandCoins className="size-4" /> Dar lance
           </button>
         </div>
@@ -118,7 +136,7 @@ export function AuctionModalDetails({ auction, onShowHistory }) {
       <div className="flex justify-between items-center text-neutral-500 mt-5">
         <div className="flex items-center gap-1">
           <Receipt className="size-4" />
-          <small className="font-semibold">6 lances</small>
+          <small className="font-semibold">{bids.length} lances</small>
         </div>
         <div className="flex gap-2">
           {!isClosed && (

@@ -78,4 +78,23 @@ multipass exec manager -- bash -c "
     docker stack deploy -c stack.yml auction-system
 "
 
-echo "✅ Deploy finalizado!"
+multipass info manager
+
+echo -e "\n ✅ Deploy finalizado!"
+
+# ========================
+# Exibindo URLs de Acesso
+# ========================
+
+MANAGER_IP=$(multipass info manager | grep IPv4 | awk '{print $2}')
+
+echo -e "\n========================="
+
+echo -e "\n🌐 O frontend pode ser acessado em:"
+echo "http://$MANAGER_IP:3000"
+
+echo -e "\n🐍 A API Flask pode ser acessada em:"
+echo "http://$MANAGER_IP:5000"
+
+echo -e "\n📦 O Redis está disponível no endereço:"
+echo "$MANAGER_IP:6379"

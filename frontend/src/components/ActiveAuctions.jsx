@@ -27,7 +27,7 @@ export function ActiveAuctions() {
       const response = await createAuction(auctionData)
       console.log(response.data)
       // Atualiza a lista de leilões após a criação
-      setAuctions((prev) => [...prev, response.data])
+      setAuctions((prev) => [...prev, response.data["result"]])
     } catch (error) {
       console.error("Error creating auction:", error)
     }
