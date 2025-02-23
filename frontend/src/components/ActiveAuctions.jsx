@@ -1,6 +1,6 @@
 import { Frown, Gavel } from "lucide-react"
 import { useEffect, useState } from "react"
-import { createAuction, getActiveAuctions } from "../api/services"
+import { createAuction, getAuctions } from "../api/services"
 import { AuctionCard } from "./AuctionCard"
 import { AuctionModal } from "./AunctionModal"
 
@@ -12,20 +12,23 @@ export function ActiveAuctions() {
   useEffect(() => {
     const fetchActiveAuctions = async () => {
       try {
-        const response = await getActiveAuctions()
-        setAuctions(response.data)
+        const response = await getAuctions()
+        const activeAuctions = response.data.filter(
+          (auction) => auction.active == "true"
+        )
+        setAuctions(activeAuctions)
       } catch (error) {
         console.error("Error fetching active auctions:", error)
       }
     }
 
     fetchActiveAuctions()
-  }, [])
+  }, [auctions])
 
   const handleCreateAuction = async (auctionData) => {
     try {
       const response = await createAuction(auctionData)
-      console.log(response.data)
+
       // Atualiza a lista de leilões após a criação
       setAuctions((prev) => [...prev, response.data["result"]])
     } catch (error) {
@@ -52,9 +55,9 @@ export function ActiveAuctions() {
 
       {auctions.length !== 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 w-full h-full">
-          {auctions.map((auction) => (
+          {auctions?.map((auction, i) => (
             <AuctionCard
-              key={auction.id}
+              key={i}
               auction={auction}
               onViewDetails={() => {
                 setModalType("details")

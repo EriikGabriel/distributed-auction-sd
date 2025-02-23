@@ -7,12 +7,16 @@ export const createAuction = async (auctionData) => {
   return await axios.post(`${API_URL}/create-auction`, auctionData)
 }
 
-export const getActiveAuctions = async () => {
+export const getAuctions = async () => {
   return await axios.get(`${API_URL}/view-auctions`)
 }
 
 export const placeBid = async (bidData) => {
   return await axios.post(`${API_URL}/place-bid`, bidData)
+}
+
+export const closeAuction = async (auctionId) => {
+  return await axios.put(`${API_URL}/close-auction/${auctionId}`)
 }
 
 export const getAuctionDetails = async (auctionId) => {

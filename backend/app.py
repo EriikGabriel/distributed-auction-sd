@@ -1,7 +1,7 @@
 import os
 
 import redis
-from flask import Flask, jsonify, request
+from flask import Flask, json, jsonify, request
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -26,7 +26,8 @@ def create_auction():
             return jsonify({"error": "Dados inválidos!"}), 400
 
         auction_id = data["id"]
-        data["bids"] = "[]"
+        data["active"] = json.dumps(data["active"])
+        data["bids"] = json.dumps(data["bids"])
 
         r.hset(f"auction:{auction_id}", mapping=data)
         return jsonify({"message": "Auction created!", "result": data}), 201
@@ -39,7 +40,13 @@ def view_auctions():
     try:
         auctions = r.keys("auction:*")
         auction_list = [
-            {k: v for k, v in r.hgetall(auction).items()} for auction in auctions
+            {
+                "id": auction.split(":")[1],
+                "title": r.hget(auction, "title"),
+                "active": r.hget(auction, "active"),
+                "current_bid": r.hget(auction, "current_bid"),
+            }
+            for auction in auctions
         ]
         return jsonify(auction_list), 200
     except Exception as e:
@@ -55,11 +62,13 @@ def place_bid():
 
         auction_id = data["id"]
         bid = float(data["bid"])
+        name = data["name"]
+        datetime = data["datetime"]
 
         if not r.exists(f"auction:{auction_id}"):
             return jsonify({"error": "Leilão não encontrado!"}), 404
 
-        if r.hget(f"auction:{auction_id}", "active") != "True":
+        if r.hget(f"auction:{auction_id}", "active") != "true":
             return jsonify({"error": "O leilão não está ativo!"}), 400
 
         current_bid = float(r.hget(f"auction:{auction_id}", "current_bid") or 0)
@@ -67,11 +76,18 @@ def place_bid():
         if bid > current_bid:
             r.hset(f"auction:{auction_id}", "current_bid", bid)
 
-            bids = jsonify(r.hget(f"auction:{auction_id}", "bids"))
-            bids.append(bid)
+            try:
+                bids_list = json.loads(r.hget(f"auction:{auction_id}", "bids"))
+            except (json.JSONDecodeError, TypeError):
+                bids_list = []
 
-            r.hset(f"auction:{auction_id}", "bids", bids)
-            r.hset(f"auction:{auction_id}", "current_bid", current_bid)
+            bids_list.insert(
+                0,
+                {"bid": bid, "name": name, "datetime": datetime},
+            )
+
+            # Atualiza o campo "bids" com a nova lista convertida para JSON
+            r.hset(f"auction:{auction_id}", "bids", json.dumps(bids_list))
             r.publish(f"auction:{auction_id}", f"New bid: {bid}")
 
             return jsonify({"message": "Bid placed!"}), 200
@@ -83,13 +99,27 @@ def place_bid():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/close-auction/<auction_id>", methods=["PUT"])
+def disable_auction(auction_id):
+    try:
+        if not r.exists(f"auction:{auction_id}"):
+            return jsonify({"error": "Leilão não encontrado!"}), 404
+
+        r.hset(f"auction:{auction_id}", "active", "false")
+        return jsonify({"message": "Auction disabled!"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/auction/<auction_id>", methods=["GET"])
 def auction_details(auction_id):
     try:
         if not r.exists(f"auction:{auction_id}"):
             return jsonify({"error": "Leilão não encontrado!"}), 404
 
-        return jsonify(r.hgetall(f"auction:{auction_id}")), 200
+        auction = r.hgetall(f"auction:{auction_id}")
+
+        return jsonify(auction), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

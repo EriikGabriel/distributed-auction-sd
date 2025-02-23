@@ -8,7 +8,7 @@ AuctionCard.propTypes = {
 }
 
 export function AuctionCard({ auction, onViewDetails }) {
-  const isClosed = !auction?.active
+  const isClosed = auction?.active === "false"
 
   return (
     <div className="bg-neutral-50 shadow-lg border border-neutral-200 rounded-lg p-3 flex flex-col gap-2">

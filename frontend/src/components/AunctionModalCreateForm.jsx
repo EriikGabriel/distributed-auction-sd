@@ -17,7 +17,7 @@ export function AuctionModalCreateForm({ onSubmit, onClose }) {
       current_bid: e.target.starting_price.value,
       end_time: e.target.end_time.value,
       bids: [],
-      active: "True",
+      active: true,
     }
 
     onSubmit(data)
