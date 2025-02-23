@@ -2,8 +2,10 @@ import os
 
 import redis
 from flask import Flask, jsonify, request
+from flask_cors import CORS  # Importe o Flask-Cors
 
 app = Flask(__name__)
+CORS(app)  # Habilita o CORS para todas as rotas
 
 # Conexão com o Redis
 redis_host = os.getenv("REDIS_HOST", "redis")
@@ -14,7 +16,8 @@ r = redis.StrictRedis(host=redis_host, port=6379, decode_responses=True)
 def create_auction():
     data = request.json
     auction_id = data["id"]
-    r.hset(f"auction:{auction_id}", mapping=data)  # Use o mapping direto
+    r.hset(f"auction:{auction_id}", mapping=data)
+
     return jsonify({"message": "Auction created!"}), 201
 
 
