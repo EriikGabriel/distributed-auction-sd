@@ -1,7 +1,8 @@
 import axios from "axios"
+import { API_URL } from "../config"
 
-const { protocol, hostname } = window.location
-const API_URL = `${protocol}//${hostname}:5000`
+// const { protocol, hostname } = window.location
+// const API_URL = `${protocol}//${hostname}:5000`
 
 export const createAuction = async (auctionData) => {
   return await axios.post(`${API_URL}/create-auction`, auctionData)

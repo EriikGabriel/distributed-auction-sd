@@ -1,12 +1,17 @@
 version: "3.8"
 
 services:
-  flask:
-    build:
-      context: ./backend
+  backend:
     image: auction-flask:latest
     ports:
       - "5000:5000"
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - "node.hostname==worker1" # ou outro atributo, se preferir
     depends_on:
       - redis
 
@@ -14,10 +19,26 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - "node.hostname==worker2"
 
   frontend:
-    build:
-      context: ./frontend
     image: auction-frontend:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - "node.hostname==manager"
     ports:
-      - "3000:80" # O Nginx escuta na porta 80
+      - "3000:80"
+
+networks:
+  default:
+    driver: overlay

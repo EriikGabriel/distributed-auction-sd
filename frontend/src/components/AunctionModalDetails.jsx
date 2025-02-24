@@ -7,66 +7,87 @@ import {
   User2,
   X,
 } from "lucide-react"
+import PropTypes from "prop-types"
 import { useEffect, useState } from "react"
 import { Bounce, toast, ToastContainer } from "react-toastify"
-import { cn } from "../utils/cn"
-
-import PropTypes from "prop-types"
+import io from "socket.io-client"
 import { closeAuction, getAuctionDetails, placeBid } from "../api/services"
+
+import { cn } from "../utils/cn"
 
 AuctionModalDetails.propTypes = {
   id: PropTypes.string,
 }
 
+const socket = io()
+
 export function AuctionModalDetails({ id }) {
-  const [auction, setAuction] = useState([])
+  const [auction, setAuction] = useState({ bids: [] }) // Inicializa bids como um array vazio
   const [timeLeft, setTimeLeft] = useState("")
   const [bidValue, setBidValue] = useState(0)
   const [showHistory, setShowHistory] = useState(false)
   const [isClosed, setIsClosed] = useState(false)
 
+  // Atualiza o lance mínimo com base no current_bid
   useEffect(() => {
     setBidValue(Number(auction?.current_bid ?? 0) + 50)
   }, [auction?.current_bid])
 
+  // Carrega os dados do leilão e registra o listener do Socket.IO
   useEffect(() => {
     const fetchAuction = async () => {
       try {
         const response = await getAuctionDetails(id)
-        setAuction(response.data)
+        const data = response.data
+        setAuction(data)
       } catch (error) {
-        console.error("Erro ao buscar detalhes do leilão:", error)
+        console.error("Erro ao buscar leilão:", error)
+      }
+    }
+    fetchAuction()
+
+    const auctionUpdateHandler = (data) => {
+      if (!isClosed) {
+        console.log("Novo lance recebido:", data)
+        setAuction((prevAuction) => ({
+          ...prevAuction,
+          current_bid: data.bid,
+          bids: [data, ...(prevAuction.bids || [])],
+        }))
       }
     }
 
-    fetchAuction()
-  }, [id, bidValue, isClosed])
+    socket.on(`auction_update_${id}`, auctionUpdateHandler)
 
+    return () => {
+      socket.off(`auction_update_${id}`, auctionUpdateHandler)
+    }
+  }, [id, isClosed])
+
+  // Atualiza o tempo restante ou fecha o leilão se o tempo acabar
   useEffect(() => {
-    if (!isClosed) {
+    if (!isClosed && auction?.end_time) {
       const interval = setInterval(async () => {
-        const now = new Date() // Tempo atual
-        const endTime = new Date(auction?.end_time).getTime() // Tempo de término do leilão em milissegundos
-        const diff = endTime - now.getTime() // Diferença em milissegundos
+        const now = new Date()
+        const endTime = new Date(auction.end_time).getTime()
+        const diff = endTime - now.getTime()
 
         if (diff <= 0) {
           const response = await closeAuction(auction.id)
-
           toast.warn("Leilão encerrado")
           console.log(response.data)
-
           setIsClosed(true)
           clearInterval(interval)
         } else {
-          const minutes = Math.floor(diff / 60000) // Calcula minutos restantes
-          const seconds = Math.floor((diff % 60000) / 1000) // Calcula segundos restantes
-          setTimeLeft(`${minutes} min ${seconds} seg`) // Atualiza o estado com o tempo restante
+          const minutes = Math.floor(diff / 60000)
+          const seconds = Math.floor((diff % 60000) / 1000)
+          setTimeLeft(`${minutes} min ${seconds} seg`)
         }
-      }, 1000) // Executa a cada segundo
+      }, 1000)
 
       return () => clearInterval(interval)
     }
-  }, [auction, isClosed])
+  }, [auction.end_time, auction.id, isClosed])
 
   const handlePlaceBid = async (e) => {
     e.preventDefault()
@@ -82,13 +103,9 @@ export function AuctionModalDetails({ id }) {
       datetime: new Date().toISOString(),
     })
 
-    console.log(response.data)
-
-    const auctionsRes = await getAuctionDetails(id)
-    setAuction(auctionsRes.data)
+    console.log("Resposta do lance:", response.data)
+    // O socket já deve atualizar o estado, não é necessário buscar novamente.
   }
-
-  let bids = JSON.parse(auction?.bids ?? "[]")
 
   return (
     <div className="rounded-lg p-3 flex flex-col gap-2">
@@ -117,7 +134,7 @@ export function AuctionModalDetails({ id }) {
         <div
           className={cn(
             "text-yellow-700 bg-amber-100 border border-yellow-500 flex justify-between items-center p-2 rounded-lg",
-            isClosed && "text-red-700 bg-red-100 border-red-500 "
+            isClosed && "text-red-700 bg-red-100 border-red-500"
           )}
         >
           <div className="flex gap-2">
@@ -155,7 +172,7 @@ export function AuctionModalDetails({ id }) {
               <input
                 type="text"
                 placeholder="Nome do usuário"
-                className="p-1 h-full outline-none  w-full"
+                className="p-1 h-full outline-none w-full"
                 name="name"
                 autoComplete="off"
                 required
@@ -168,7 +185,7 @@ export function AuctionModalDetails({ id }) {
               <input
                 type="text"
                 placeholder={`${Number(auction?.current_bid) + 50}`}
-                className="p-1 h-full outline-none  w-full"
+                className="p-1 h-full outline-none w-full"
                 onChange={(e) => {
                   const placeBidButton =
                     document.getElementById("place-bid-button")
@@ -194,7 +211,9 @@ export function AuctionModalDetails({ id }) {
       <div className="flex justify-between items-center text-neutral-500 mt-5">
         <div className="flex items-center gap-1">
           <Receipt className="size-4" />
-          <small className="font-semibold">{bids.length} lances</small>
+          <small className="font-semibold">
+            {auction.bids.length} lances
+          </small>{" "}
         </div>
         <div className="flex gap-2">
           <button
@@ -219,7 +238,7 @@ export function AuctionModalDetails({ id }) {
             </button>
           </div>
           <ul className="space-y-3 max-h-[80vh] overflow-y-auto">
-            {bids?.map((bidData, index) => (
+            {auction.bids.map((bidData, index) => (
               <li
                 key={index}
                 className="border p-2 rounded bg-gray-100 border-neutral-500"

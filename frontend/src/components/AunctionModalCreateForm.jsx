@@ -1,4 +1,5 @@
 import PropTypes from "prop-types"
+import { v4 as uuid } from "uuid"
 
 AuctionModalCreateForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
@@ -10,7 +11,7 @@ export function AuctionModalCreateForm({ onSubmit, onClose }) {
     e.preventDefault()
 
     const data = {
-      id: crypto.randomUUID(),
+      id: uuid(),
       title: e.target.title.value,
       description: e.target.description.value,
       starting_price: e.target.starting_price.value,

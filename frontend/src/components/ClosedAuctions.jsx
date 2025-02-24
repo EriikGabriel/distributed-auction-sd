@@ -18,7 +18,6 @@ export function ClosedAuctions() {
           (auction) => auction.active == "false"
         )
 
-        // console.log(closedAuctions)
         setClosedAuctions(closedAuctions)
       } catch (error) {
         console.error("Error fetching active auctions:", error)
@@ -26,7 +25,7 @@ export function ClosedAuctions() {
     }
 
     fetchClosedAuctions()
-  }, [closedAuctions])
+  }, [])
 
   return (
     <section className="flex flex-col gap-3 min-h-40 bg-neutral-100 border border-neutral-300 rounded-lg p-5">

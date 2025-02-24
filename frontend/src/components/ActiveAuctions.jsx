@@ -1,20 +1,21 @@
 import { Frown, Gavel } from "lucide-react"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { createAuction, getAuctions } from "../api/services"
 import { AuctionCard } from "./AuctionCard"
 import { AuctionModal } from "./AunctionModal"
 
-export function ActiveAuctions() {
+export const ActiveAuctions = React.memo(function ActiveAuctions() {
   const [auctions, setAuctions] = useState([])
   const [modalType, setModalType] = useState(null)
   const [selectedAuction, setSelectedAuction] = useState(null)
 
   useEffect(() => {
+    console.log("Fetching active auctions...")
     const fetchActiveAuctions = async () => {
       try {
         const response = await getAuctions()
         const activeAuctions = response.data.filter(
-          (auction) => auction.active == "true"
+          (auction) => auction.active === "true"
         )
         setAuctions(activeAuctions)
       } catch (error) {
@@ -23,13 +24,11 @@ export function ActiveAuctions() {
     }
 
     fetchActiveAuctions()
-  }, [auctions])
+  }, [])
 
   const handleCreateAuction = async (auctionData) => {
     try {
       const response = await createAuction(auctionData)
-
-      // Atualiza a lista de leilões após a criação
       setAuctions((prev) => [...prev, response.data["result"]])
     } catch (error) {
       console.error("Error creating auction:", error)
@@ -55,7 +54,7 @@ export function ActiveAuctions() {
 
       {auctions.length !== 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 w-full h-full">
-          {auctions?.map((auction, i) => (
+          {auctions.map((auction, i) => (
             <AuctionCard
               key={i}
               auction={auction}
@@ -87,4 +86,4 @@ export function ActiveAuctions() {
       )}
     </section>
   )
-}
+})
