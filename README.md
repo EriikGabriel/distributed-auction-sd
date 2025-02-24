@@ -79,6 +79,57 @@ Em seguida, no diretório raiz do projeto clonado, execute o comando:
 ```
 Pronto, agora seu projeto já está funcionando e esta apto para testes
 
+Por útlimo, acesse o link do Fronted gerado no terminal e você verá a interface do Leilão
+
+## Testes
+
+Nessa seção descreveremos os testes realizados:
+
+### **Cenários de Teste Automatizados**  
+
+1. **Criar um leilão com sucesso**  
+   - Enviar uma requisição para criar um leilão com um ID e um título válidos.  
+   - Esperado: O leilão é armazenado no Redis e a resposta contém "Auction created!" com status 201.  
+
+2. **Criar um leilão sem ID**  
+   - Enviar uma requisição para criar um leilão sem fornecer um ID.  
+   - Esperado: A API retorna erro "Dados inválidos!" com status 400.  
+
+3. **Listar todos os leilões disponíveis**  
+   - Enviar uma requisição para visualizar os leilões cadastrados.  
+   - Esperado: Retorna uma lista de leilões com status 200.  
+
+4. **Consultar detalhes de um leilão existente**  
+   - Criar um leilão e consultar seus detalhes.  
+   - Esperado: Retorna informações do leilão corretamente com status 200.  
+
+5. **Consultar detalhes de um leilão inexistente**  
+   - Consultar um leilão com ID inexistente.  
+   - Esperado: Retorna erro "Leilão não encontrado!" com status 404.  
+
+6. **Inserir um lance válido em um leilão ativo**  
+   - Criar um leilão ativo e enviar um lance maior que o atual.  
+   - Esperado: O lance é aceito, o valor do lance atual é atualizado e uma notificação é enviada via Pub/Sub.  
+
+7. **Inserir um lance abaixo do valor atual**  
+   - Criar um leilão com um lance inicial e tentar inserir um lance menor.  
+   - Esperado: A API rejeita o lance e retorna erro "Bid muito baixo!" com status 400.  
+
+8. **Inserir um lance em um leilão inativo**  
+   - Criar um leilão inativo e tentar inserir um lance.  
+   - Esperado: A API retorna erro "O leilão não está ativo!" com status 400.  
+
+9. **Inserir um lance em um leilão inexistente**  
+   - Tentar inserir um lance em um leilão que não existe.  
+   - Esperado: A API retorna erro "Leilão não encontrado!" com status 404.  
+
+10. **Carga com grande número de requisições**  
+   - Enviar muitas requisições para criar leilões e inserir lances em alta frequência.  
+   - Esperado: O sistema mantém a estabilidade e não apresenta falhas.  
+
+11. **Notificações em tempo real (Pub/Sub)**  
+   - Criar um leilão, conectar-se ao canal Pub/Sub e inserir um lance.  
+   - Esperado: Todos os clientes conectados recebem a notificação do novo lance imediatamente .
 
 
 
