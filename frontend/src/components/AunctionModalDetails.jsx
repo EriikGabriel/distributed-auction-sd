@@ -13,13 +13,14 @@ import { Bounce, toast, ToastContainer } from "react-toastify"
 import io from "socket.io-client"
 import { closeAuction, getAuctionDetails, placeBid } from "../api/services"
 
+import { API_URL } from "../config"
 import { cn } from "../utils/cn"
 
 AuctionModalDetails.propTypes = {
   id: PropTypes.string,
 }
 
-const socket = io()
+const socket = io(API_URL)
 
 export function AuctionModalDetails({ id }) {
   const [auction, setAuction] = useState({ bids: [] }) // Inicializa bids como um array vazio
